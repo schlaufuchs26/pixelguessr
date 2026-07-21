@@ -50,8 +50,8 @@ export function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [roundIndex, setRoundIndex] = useState(0);
   const [wrongGuesses, setWrongGuesses] = useState(0);
-  const [, setScore] = useState(0);
   const [totalScore, setTotalScore] = useState(0);
+  const [roundScore, setRoundScore] = useState(0);
   const [gameState, setGameState] = useState<GameState>("playing");
   const [message, setMessage] = useState("");
   const [imageLoaded, setImageLoaded] = useState<HTMLImageElement | null>(null);
@@ -59,7 +59,6 @@ export function App() {
 
   const currentRound = ROUNDS[roundIndex] ?? { image: "", name: "Unknown" };
   const resolution = getResolution(wrongGuesses);
-  // roundScore is the potential points if the player guesses correctly now
 
   // Preload image when round changes
   useEffect(() => {
@@ -114,7 +113,7 @@ export function App() {
 
       if (isCorrect) {
         const points = scoreForWrongGuesses(wrongGuesses);
-        setScore(points);
+        setRoundScore(points);
         setTotalScore((s) => s + points);
         setGameState("guessed-correct");
         setMessage(`Correct! +${points} points 🎉`);
@@ -148,7 +147,7 @@ export function App() {
     }
     setRoundIndex((i) => i + 1);
     setWrongGuesses(0);
-    setScore(0);
+    setRoundScore(0);
     setGameState("playing");
     setMessage("");
     setGuess("");
@@ -158,7 +157,7 @@ export function App() {
   const handleRestart = useCallback(() => {
     setRoundIndex(0);
     setWrongGuesses(0);
-    setScore(0);
+    setRoundScore(0);
     setTotalScore(0);
     setGameState("playing");
     setMessage("");
@@ -179,6 +178,7 @@ export function App() {
         <span>
           Round {roundIndex + 1} / {ROUNDS.length}
         </span>
+        {roundScore > 0 && <span>+{roundScore}</span>}
         <span>Score: {totalScore}</span>
         <span>
           {resolution}×{resolution}
@@ -220,9 +220,7 @@ export function App() {
         </button>
       )}
 
-      {(gameState === "round-end" ||
-        (gameState === "guessed-correct" &&
-          roundIndex >= ROUNDS.length - 1)) && (
+      {gameState === "round-end" && (
         <div>
           {allDone && (
             <p style={styles.finalScore}>
